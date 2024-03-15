@@ -1,0 +1,57 @@
+# Versión utilizada
+version: '3'
+
+# Configuración de los servidores que vamos a necesitar
+services: 
+ 
+  # mysql es el nombre que vamos a dar a este primer servicio
+  # Será el nombre que tendremos que usar cuando nos refiramos a él
+  mysql:
+    build: mysql/ #Usamos la version 5.7 de mysql
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: dwes
+      MYSQL_USER: dwes
+      MYSQL_PASSWORD: dwes
+      MYSQL_DATABASE: dwes
+    volumes:
+      - db_data:/var/lib/mysql
+
+  apache:
+    build: apache/ #Cogemos lo que hay en la carpeta apache
+    ports:
+      - 80:80
+    volumes:
+      - proyecto:/var/www/html/ #Montamos proyecto en /var/www/html
+    depends_on:
+      - mysql
+
+  php:
+    build: php/ #Cogemos lo que hay en la carpeta php
+    ports:
+      - 9000:9000
+    volumes:
+      - proyecto:/var/www/html/ #Montamos proyecto en /var/www/html
+    depends_on:
+      - mysql
+
+  wordpress:
+    image: wordpress:latest #Cogemos la ultima imagen de wordpres
+    volumes:
+      - wp_data:/var/www/html
+    ports:
+      - 90:90 #Puerto 90 porque el 80 ya esta ocupado
+    restart: always
+    environment:
+      - WORDPRESS_DB_HOST=mysql
+      - WORDPRESS_DB_USER=dwes
+      - WORDPRESS_DB_PASSWORD=dwes
+      - WORDPRESS_DB_NAME=dwes
+    depends_on:
+      - mysql
+
+volumes:
+  proyecto:
+  db_data:
+  wp_data:
